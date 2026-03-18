@@ -10,7 +10,7 @@ A set of Claude Code skills for comprehensive, validated code review and iterati
 | **Improve Check** | `/improve-check [ref]` | Validate AI-generated changes — catch hallucinations |
 | **Improve Loop** | `/improve-loop <plan-file>` | Iterative convergence loop chaining all skills |
 
-The standalone `/improve-plan` skill (separate from this suite) is also used within the loop.
+The loop embeds the `/improve-plan` logic directly via `agents/plan-review.md` — the standalone `/improve-plan` skill is **not** called during the loop. The agent file contains the full unshortened plan-review instructions so no quality is lost.
 
 ---
 
