@@ -1,16 +1,56 @@
 # Code Quality Skills Suite
 
-A set of Claude Code skills for comprehensive, validated code review and iterative plan improvement. Each skill can be used independently or chained together via the `/improve-loop` orchestrator.
+AI reviewing AI — then reviewing the review.
+
+Most AI-generated plans and code changes have a dirty secret: ~20-40% of "improvements" are hallucinated fixes for problems that don't exist, incorrect API usage confidently presented as best practice, or over-engineered solutions that add complexity without value. You wouldn't ship code without code review. Why would you ship an AI-generated plan without one?
+
+This suite solves that with a multi-layered approach:
+
+1. **Parallel expert agents** attack your plan and code from 6 different angles simultaneously — architecture, security, API compliance, performance, edge cases, and code quality. Each agent is a specialist, not a generalist trying to do everything.
+
+2. **Hallucination validation** reviews every change the experts proposed, going hunk-by-hunk to verify: does this problem actually exist? Is the fix correct per the real docs (checked via Context7)? Would a senior engineer actually make this change? Bad changes get surgically reverted.
+
+3. **The convergence loop** chains it all together — improve, validate, review code, validate again, repeat — until there's nothing left to improve or strip. Each iteration catches issues the previous one missed, while validation prevents the review from drifting into fiction.
+
+The result: plans that have been stress-tested by multiple expert perspectives, with every suggestion verified against reality. No hallucination theater. No thoroughness padding. Just real improvements that survive scrutiny.
 
 ## Skills Overview
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
+| **Improve Plan** | `/improve-plan [source] [focus]` | Multi-agent plan review — architecture, research, API audit, edge cases |
 | **Code Review** | `/code-review [target]` | Find bugs, security holes, API misuse, and quality issues |
 | **Improve Check** | `/improve-check [ref]` | Validate AI-generated changes — catch hallucinations |
 | **Improve Loop** | `/improve-loop <plan-file>` | Iterative convergence loop chaining all skills |
 
-The loop embeds the `/improve-plan` logic directly via `agents/plan-review.md` — the standalone `/improve-plan` skill is **not** called during the loop. The agent file contains the full unshortened plan-review instructions so no quality is lost.
+All four skills work standalone. The loop orchestrates them via Agent() sub-agents using embedded instructions from `agents/` — it does not call the standalone skills directly (Skill() breaks loop control).
+
+---
+
+## `/improve-plan` — Multi-Agent Plan Review
+
+Launches **4-5 parallel expert agents** to deeply review and improve a plan:
+
+| Agent | Focus | Key Checks |
+|-------|-------|------------|
+| Architecture & Design | Principal engineer review | Step clarity, sequencing, simplicity, rollback paths, scope |
+| Prior Art & Industry | Real-world research | How top companies solve this, open-source patterns, common pitfalls |
+| API & Library Audit | Best practices | Context7 docs verification, deprecated patterns, rate limits, auth |
+| Edge Cases & Robustness | Chaos engineering | Dependency failures, race conditions, data consistency, graceful degradation |
+| Focus Deep Dive | User-specified | Security, performance, UX, architecture, cost (only if focus provided) |
+
+### Usage
+
+```
+/improve-plan                              # Auto-detect from plan mode or tasks/todo.md
+/improve-plan tasks/todo.md                # Review specific plan file
+/improve-plan tasks/todo.md security       # Review with security focus
+/improve-plan https://example.com/plan     # Review plan from URL
+```
+
+### Output
+
+Severity-rated findings (Critical > Important > Suggestions) plus a "Revised Plan (proposed)" showing changes with ~~strikethrough~~ for removals and **bold** for additions.
 
 ---
 
@@ -161,6 +201,8 @@ Key: Each `git diff HEAD` only shows the current phase's changes because prior p
 
 ```
 .claude/skills/
+  improve-plan/
+    SKILL.md                    # Standalone plan improvement skill
   code-review/
     SKILL.md                    # Standalone code review skill
   improve-check/
